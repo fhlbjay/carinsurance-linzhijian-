@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ClientReportMapper">
+    <!--查询出所有的正式客户的个数 先根据年份-->
+    <select id="formalClient" resultType="map">
+        SELECT
+        <if test="inputTimeYear!=null">
+             ${inputTimeYear} inputYear,
+        </if>
+            COUNT(c.`status`) totalNumber,
+            e.username inputUsername
+
+        FROM
+            client c LEFT JOIN employee e on c.inputUser=e.id
+
+
+            <include refid="BaseSql"></include>
+        <if test="inputTimeYear!=null">
+        GROUP BY ${inputTimeYear}
+            /*DATE_FORMAT(c.inputTime,'%Y')*/
+        </if>
+    </select>
+    <sql id="BaseSql">
+        <where>
+            c. status = 1
+
+            <if test="beginDate!=null">
+                AND c.inputtime >= #{beginDate}
+            </if>
+            <if test="endDate!=null">
+                AND c.inputtime &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+    <select id="selectGroupingName" resultType="String">
+        SELECT d.intro FROM dictionary_detail d where d.parent_id = 7
+    </select>
+</mapper>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.WagesMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Wages" >
+    <id column="id" property="id" />
+    <result column="inputTime" property="inputTime" />
+    <result column="outputTime" property="outputTime" />
+    <result column="salary" property="salary" />
+
+    <association property="employee" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+      <id column="id" property="id"/>
+      <result column="username" property="username"/>
+
+      <result column="tel" property="tel"/>
+      <result column="email" property="email"/>
+    </association>
+
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `wages`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Wages" useGeneratedKeys="true" keyProperty="id" >
+    insert into `wages` (inputTime, outputTime, salary, employee_id)
+    values (#{inputTime},#{outputTime}, #{salary}, #{employee.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Wages" >
+    update `wages`
+    set inputTime = #{inputTime},
+      outputTime = #{outputTime},
+      salary = #{salary},
+      employee_id = #{employee.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, inputTime,outputTime,salary, employee_id
+    from `wages`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, inputTime,outputTime, salary, employee_id
+    from `wages`
+  </select>
+
+
+
+  <select id="queryCount" resultType="int">
+    SELECT count(w.id)
+    FROM `wages` w LEFT JOIN employee e on w.employee_id = e.id
+    <include refid="BaseSql"/>
+  </select>
+  <select id="queryList" resultMap="BaseResultMap">
+    select w.id, w.inputTime,w.outputTime, w.salary, e.username e_username, e.email e_email
+    from `wages` w LEFT JOIN employee e on w.employee_id = e.id
+    <include refid="BaseSql"/>
+    LIMIT #{begin}, #{rows}
+  </select>
+
+  <sql id="BaseSql">
+    <where>
+      <if test="keywords != null and keywords!=''">
+        AND (e.username like concat('%',#{keywords},'%') or e.email like concat('%',#{keywords},'%'))
+      </if>
+      <if test="inputTime!=null">
+        AND w.inputTime >= #{inputTime}
+      </if>
+      <if test="outputTime!=null">
+        AND w.outputTime &lt;= #{outputTime}
+      </if>
+    </where>
+  </sql>
+</mapper>

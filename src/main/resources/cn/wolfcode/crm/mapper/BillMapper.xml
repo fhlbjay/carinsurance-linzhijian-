@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.BillMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Bill">
+        <id column="id" property="id"/>
+        <result column="status" property="status"/>
+        <result column="totalAmount" property="totalamount"/>
+        <result column="pay" property="pay"/>
+        <association property="applicant" column="app_id" columnPrefix="app_"
+                     javaType="cn.wolfcode.crm.domain.Client"
+                     select="cn.wolfcode.crm.mapper.ClientMapper.selectByPrimaryKey"
+        />
+        <association property="recognizee" column="rec_id" columnPrefix="rec_"
+                     javaType="cn.wolfcode.crm.domain.Client"
+                     select="cn.wolfcode.crm.mapper.ClientMapper.selectByPrimaryKey"
+        />
+        <association property="product" column="p_id" columnPrefix="p_"
+                     javaType="cn.wolfcode.crm.domain.Product"
+                     select="cn.wolfcode.crm.mapper.ProductMapper.selectByPrimaryKey"
+        />
+        <association property="car" column="c_id" columnPrefix="c_"
+                     javaType="cn.wolfcode.crm.domain.Car"
+                     select="cn.wolfcode.crm.mapper.CarMapper.selectByPrimaryKey"
+        />
+        <association property="basicBill" column="basic_id" columnPrefix="basic_"
+                     javaType="cn.wolfcode.crm.domain.BasicBill"
+                     select="cn.wolfcode.crm.mapper.BasicBillMapper.selectByPrimaryKey"
+        />
+        <association property="taxAndIns" column="tax_id" columnPrefix="tax_"
+                     javaType="cn.wolfcode.crm.domain.TaxAndIns"
+                     select="cn.wolfcode.crm.mapper.TaxAndInsMapper.selectByPrimaryKey"
+        />
+        <association property="approval" column="a_id" columnPrefix="a_"
+                     javaType="cn.wolfcode.crm.domain.Approval"
+                     select="cn.wolfcode.crm.mapper.ApprovalMapper.selectByPrimaryKey"
+        />
+        <association property="audit" column="au_id" columnPrefix="au_"
+                     javaType="cn.wolfcode.crm.domain.Audit"
+                     select="cn.wolfcode.crm.mapper.AuditMapper.selectByPrimaryKey"
+        />
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `bill`
+    where id = #{id}
+  </delete>
+    <update id="back">
+        update bill set status = #{status} where id = #{id}
+    </update>
+    <update id="app">
+      update bill set approval_id = #{id} where id = #{bill.id}
+    </update>
+    <update id="tax">
+      update bill set taxandins_id = #{id} where id = #{bill.id}
+    </update>
+    <update id="audit">
+        update bill set status = #{status},audit_id = #{audit.id},pay=#{pay} where id = #{id}
+    </update>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Bill" useGeneratedKeys="true" keyProperty="id">
+    insert into `bill` (status, applicant_id, recognizee_id, totalAmount, product_id,car_id,basicBill_id,taxandins_id,approval_id,pay,audit_id)
+    values (#{status}, #{applicant.id}, #{recognizee.id}, #{totalamount}, #{product.id},#{car.id},#{basicBill.id},#{taxAndIns.id},#{approval.id},#{pay},#{audit.id})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Bill">
+    update `bill`
+    set status = #{status},
+      applicant_id = #{applicant.id},
+      recognizee_id = #{recognizee.id},
+      totalAmount = #{totalamount},
+      product_id = #{product.id},
+      car_id = #{car.id},
+      basicBill_id = #{basicBill.id},
+      taxAndIns_id = #{taxAndIns.id},
+      approval_id = #{approval.id},
+      pay = #{pay},
+      audit_id = #{audit.id}
+    where id = #{id}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, status, applicant_id, recognizee_id, totalAmount, product_id,car_id,basicBill_id,taxandins_id,approval_id,pay,audit_id
+    from `bill`
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, status, applicant_id, recognizee_id, totalAmount, product_id,car_id,basicBill_id,taxandins_id,approval_id,pay,audit_id
+    from `bill`
+  </select>
+    <select id="queryCount" resultType="int">
+        select count(b.id)
+        from bill b
+        LEFT JOIN client app on b.applicant_id = app.id
+        LEFT JOIN client rec on b.recognizee_id = rec.id
+        LEFT JOIN product p on b.product_id = p.id
+        LEFT JOIN car c on b.car_id = c.id
+        LEFT JOIN basicbill basic on b.basicBill_id = basic.id
+        LEFT JOIN employee e on app.inChargeUser_id = e.id
+        LEFT JOIN company com on p.company_id = com.id
+        LEFT JOIN taxandins tax on b.taxandins_id = tax.id
+        LEFT JOIN approval a on b.approval_id = a.id
+        LEFT JOIN audit au on b.audit_id = au.id
+        <include refid="baseSql"></include>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        select b.id,b.totalAmount,b.status,b.pay,
+        app.id app_id,app.`name` app_name,app.age app_age,app.gender app_gender,app.tel app_tel,app.email app_email,
+        app.idCard app_idCard,app.qq app_qq,app.wechat app_wechat,app.job app_job,app.salaryLevel app_salaryLevel,
+        app.customerSource app_customerSource,app.inChargeUser_id app_inputUser_id,app.address app_address,
+        rec.id rec_id,rec.`name` rec_name,rec.age rec_age,rec.gender rec_gender,rec.tel rec_tel,
+        rec.email rec_email,rec.idCard rec_idCard,rec.qq rec_qq,rec.wechat rec_wechat,rec.job rec_job,
+        rec.salaryLevel rec_salaryLevel,rec.customerSource rec_customerSource,
+        rec.inChargeUser_id rec_inCargeUser_id,rec.address rec_address,
+        p.id p_id,p.`name` p_name,p.company_id p_company_id,p.years p_years,p.amount p_amount,p.years p_years,
+        c.id c_id,c.carBrand_id c_carBrand_id,c.carNumber c_carNumber,c.valuation c_valuetion,c.type c_type,c.size
+        c_size,
+        basic.id basic_id,basic.inputDate basic_inputDate,basic.beginDate basic_beginDate,basic.endDate basic_endDate,
+        basic.odd basic_odd,basic.handle basic_handle,basic.arbitrament basic_arbitrament,
+        basic.payway basic_payway,basic.businesssource basic_businesssource,
+        basic.channel basic_channel,basic.appoint basic_appoint,basic.inputUser_id basic_inputUser_id,
+        tax.id tax_id,tax.traffic_number tax_traffic_number,tax.drunk_number tax_drunk_number,tax.safe_years
+        tax_safe_years,
+        tax.ins_modulus tax_ins_modulus,tax.tax tax_tax,tax.ins tax_ins,tax.bill_id tax_bill_id,
+        a.id a_id,a.checkNum a_checkNum,a.checkBeginDate a_checkBeginDate,a.checkEndDate a_checkEndDate,
+        a.applicant_id a_applicant_id,a.checkAppDate a_checkAppDate,a.checkWord a_checkWord,a.checkCompare
+        a_checkCompare,
+        a.bill_id a_bill_id,
+        au.id au_id,au.auditor_id au_auditor_id,au.auditdate au_auditdate,au.odd au_odd,au.checkodd au_checkodd
+        from bill b
+        LEFT JOIN client app on b.applicant_id = app.id
+        LEFT JOIN client rec on b.recognizee_id = rec.id
+        LEFT JOIN product p on b.product_id = p.id
+        LEFT JOIN car c on b.car_id = c.id
+        LEFT JOIN basicbill basic on b.basicBill_id = basic.id
+        LEFT JOIN employee e on app.inChargeUser_id = e.id
+        LEFT JOIN company com on p.company_id = com.id
+        LEFT JOIN taxandins tax on b.taxandins_id = tax.id
+        LEFT JOIN approval a on b.approval_id = a.id
+        LEFT JOIN audit au on b.audit_id = au.id
+        <include refid="baseSql"></include>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <sql id="baseSql">
+        <where>
+            <if test="comId != null">
+                and com.id = #{comId}
+            </if>
+            <if test="proId2 != null">
+                and p.id = #{proId2}
+            </if>
+            <if test="beginDate!=null">
+                AND basic.beginDate >= #{beginDate}
+            </if>
+            <if test="endDate!=null">
+                AND basic.endDate &lt;= #{endDate}
+            </if>
+            <if test="odd != null and odd != ''">
+                AND basic.odd LIKE concat('%',#{odd},'%')
+            </if>
+            <if test="carNumber != null and carNumber != ''">
+                AND c.carNumber LIKE concat('%',#{carNumber},'%')
+            </if>
+            <if test="appId != null">
+                AND app.id = #{appId}
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                AND app.idCard = #{idNumber}
+            </if>
+            <if test="status != null">
+                AND b.status = #{status}
+            </if>
+            <if test="pay != null and pay != 0">
+                AND b.pay = #{pay}
+            </if>
+            <if test="pay == 0">
+                AND b.pay = 1 or b.pay = 2
+            </if>
+        </where>
+    </sql>
+</mapper>

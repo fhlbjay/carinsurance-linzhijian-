@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ClientMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Client">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="age" property="age"/>
+        <result column="gender" property="gender"/>
+        <result column="idCard" property="idCard"/>
+        <result column="tel" property="tel"/>
+        <result column="email" property="email"/>
+        <result column="qq" property="qq"/>
+        <result column="weChat" property="weChat"/>
+        <result column="inputTime" property="inputTime"/>
+        <result column="status" property="status"/>
+        <result column="address" property="address"/>
+        <association column="inputUser" javaType="cn.wolfcode.crm.domain.Employee" property="inputUser"
+                     select="cn.wolfcode.crm.mapper.EmployeeMapper.selectByPrimaryKey"/>
+        <association column="inChargeUser_id" javaType="cn.wolfcode.crm.domain.Employee" property="inChargeUser"
+                     select="cn.wolfcode.crm.mapper.EmployeeMapper.selectByPrimaryKey"/>
+        <association property="salaryLevel" column="salaryLevel"
+                     javaType="cn.wolfcode.crm.domain.DictionaryDetail"
+                     select="cn.wolfcode.crm.mapper.DictionaryDetailMapper.selectByPrimaryKey"/>
+        <association property="job" column="job"
+                     javaType="cn.wolfcode.crm.domain.DictionaryDetail"
+                     select="cn.wolfcode.crm.mapper.DictionaryDetailMapper.selectByPrimaryKey"/>
+        <association property="customerSource" column="customerSource"
+                     javaType="cn.wolfcode.crm.domain.DictionaryDetail"
+                     select="cn.wolfcode.crm.mapper.DictionaryDetailMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from `client`
+    where id = #{id}
+  </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Client" useGeneratedKeys="true" keyProperty="id">
+    insert into `client` (name, age, gender,idCard, tel, email, qq, weChat, salaryLevel,job,
+      customerSource, inChargeUser_id, inputUser, inputTime, status,address)
+    values (#{name}, #{age}, #{gender},#{idCard}, #{tel}, #{email}, #{qq}, #{weChat}, #{salaryLevel.id},#{job.id},
+      #{customerSource.id}, #{inChargeUser.id}, #{inputUser.id}, #{inputTime}, #{status},#{address})
+  </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Client">
+    update `client`
+    set name = #{name},
+      age = #{age},
+      gender = #{gender},
+      idCard = #{idCard},
+      tel = #{tel},
+      email = #{email},
+      qq = #{qq},
+      weChat = #{weChat},
+      salaryLevel = #{salaryLevel.id},
+      job = #{job.id},
+      customerSource = #{customerSource.id},
+      inChargeUser_id = #{inChargeUser.id},
+      inputUser = #{inputUser.id},
+      inputTime = #{inputTime},
+      status = #{status},
+      address = #{address}
+    where id = #{id}
+  </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+    select id, name, age, gender,idCard, tel, email, qq, weChat, salaryLevel, customerSource,job,
+    inChargeUser_id, inputUser, inputTime, status,address
+    from `client`
+    where id = #{id}
+  </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+    select id, name, age, gender,idCard, tel, email, qq, weChat, salaryLevel, customerSource,job,
+    inChargeUser_id, inputUser, inputTime, status,address
+    from `client`
+  </select>
+    <select id="queryCount" resultType="int">
+        SELECT count(id)
+        FROM `client`
+        <include refid="baseSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        select id, name, age, gender,idCard, tel, email, qq, weChat, salaryLevel, customerSource,job,
+        inChargeUser_id, inputUser, inputTime, status,address
+        from `client`
+        <include refid="baseSql"/>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <update id="move">
+        update client set status = 2 where id = #{id}
+    </update>
+    <update id="defeat">
+        update client set status = -1 where id = #{id}
+    </update>
+    <update id="off">
+        update client set status = -2 where id = #{id}
+    </update>
+    <update id="absorb">
+        update client set status = 0 where id = #{id}
+    </update>
+    <update id="official">
+        update client set status = 1 where id = #{id}
+    </update>
+    <sql id="baseSql">
+        <where>
+            <if test="status ==  null">
+                and (status = 0 OR status = -1)
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="keywords != null">
+                AND (name LIKE concat('%',#{keywords},'%') OR idCard LIKE concat('%',#{keywords},'%'))
+            </if>
+        </where>
+    </sql>
+</mapper>

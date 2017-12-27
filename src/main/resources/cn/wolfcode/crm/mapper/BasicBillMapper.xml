@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.BasicBillMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.BasicBill" >
+    <id column="id" property="id" />
+    <result column="beginDate" property="beginDate" />
+    <result column="endDate" property="endDate" />
+    <result column="inputDate" property="inputDate" />
+    <result column="odd" property="odd" />
+    <result column="handle" property="handle" />
+    <result column="arbitrament" property="arbitrament" />
+    <result column="payWay" property="payWay" />
+    <result column="businessSource" property="businessSource" />
+    <result column="channel" property="channel" />
+    <result column="appoint" property="appoint" />
+    <association property="inputUser" column="inputUser_id" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+      <id column="id" property="id"/>
+      <result column="username" property="username"/>
+    </association>
+    <association property="bill" column="bill_id" javaType="cn.wolfcode.crm.domain.Car"
+                 select="cn.wolfcode.crm.mapper.BillMapper.selectByPrimaryKey"/>
+  </resultMap>
+  <delete id="deleteByBillId">
+    delete from `basicbill`
+    where bill_id = #{id}
+  </delete>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `basicbill`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.BasicBill" useGeneratedKeys="true" keyProperty="id" >
+    insert into `basicbill` (beginDate, endDate, inputDate, odd, handle, arbitrament, 
+      payWay, businessSource, channel, inputUser_id, appoint,bill_id)
+    values (#{beginDate}, #{endDate}, #{inputDate}, #{odd}, #{handle}, #{arbitrament}, 
+      #{payWay}, #{businessSource}, #{channel}, #{inputUser.id}, #{appoint},#{bill.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.BasicBill" >
+    update `basicbill`
+    set beginDate = #{beginDate},
+      endDate = #{endDate},
+      inputDate = #{inputDate},
+      odd = #{odd},
+      handle = #{handle},
+      arbitrament = #{arbitrament},
+      payWay = #{payWay},
+      businessSource = #{businessSource},
+      channel = #{channel},
+      inputUser_id = #{inputUser.id},
+      appoint = #{appoint},
+      bill_id = #{bill.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, beginDate, endDate, inputDate, odd, handle, arbitrament, payWay, businessSource, 
+    channel, inputUser_id, appoint,bill_id
+    from `basicbill`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, beginDate, endDate, inputDate, odd, handle, arbitrament, payWay, businessSource, 
+    channel, inputUser_id, appoint,bill_id
+    from `basicbill`
+  </select>
+</mapper>

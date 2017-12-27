@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DevelopAndLoseRecordMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.DevelopAndLoseRecord">
+        <id column="id" property="id"/>
+        <result column="date" property="date"/>
+        <result column="cause" property="cause"/>
+        <result column="status" property="status"/>
+        <association column="client_id" property="client"
+                     javaType="cn.wolfcode.crm.domain.Client" columnPrefix="c_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="inChargeUser" column="inChargeUser_id"
+                     javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `developandloserecord`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.DevelopAndLoseRecord" useGeneratedKeys="true"
+            keyProperty="id">
+        INSERT INTO `developandloserecord` (date, client_id, inChargeUser_id, cause,status)
+        VALUES (#{date}, #{client.id}, #{inChargeUser.id}, #{cause}, #{client.status})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.DevelopAndLoseRecord">
+        UPDATE `developandloserecord`
+        SET date            = #{date},
+            client_id       = #{client.id},
+            inChargeUser_id = #{inChargeUser.id},
+            cause           = #{cause},
+            status           = #{status}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            date,
+            client_id,
+            inChargeUser_id,
+            cause,
+            status
+        FROM `developandloserecord`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            date,
+            client_id,
+            inChargeUser_id,
+            cause,
+            status
+        FROM `developandloserecord`
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(d.id)
+        FROM `developandloserecord` d LEFT JOIN client c ON d.client_id = c.id
+            LEFT JOIN employee e on d.inChargeUser_id = e.id where d.status = #{status}
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+            d.id,
+            date,
+            client_id,
+            d.inChargeUser_id,
+            cause,
+            d.status,
+            c.id c_id, c.name c_name,
+            e.id e_id,e.username e_username
+        FROM `developandloserecord` d LEFT JOIN client c ON d.client_id = c.id
+            LEFT JOIN employee e on d.inChargeUser_id = e.id where d.status = #{status}
+        LIMIT #{begin}, #{rows}
+    </select>
+</mapper>

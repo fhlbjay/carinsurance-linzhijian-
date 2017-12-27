@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.EmployeeMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Employee">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="realname" property="realname"/>
+        <result column="password" property="password"/>
+        <result column="tel" property="tel"/>
+        <result column="email" property="email"/>
+        <result column="inputtime" property="inputtime"/>
+        <result column="state" property="state"/>
+        <result column="admin" property="admin"/>
+        <association property="department" column="dept_id" javaType="cn.wolfcode.crm.domain.Department"
+                     select="cn.wolfcode.crm.mapper.DepartmentMapper.selectByPrimaryKey"/>
+        <collection property="roles" column="id" ofType="cn.wolfcode.crm.domain.Role"
+                    select="cn.wolfcode.crm.mapper.RoleMapper.selectRolesByEmployeeId"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `employee`
+        WHERE id = #{id}
+    </delete>
+    <delete id="deleteRelationByEmployeeId">
+        DELETE FROM employee_role
+        WHERE employee_id = #{employeeId}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Employee" useGeneratedKeys="true" keyProperty="id"
+            keyColumn="id">
+        INSERT INTO `employee` (username, realname, password, tel, email, dept_id, inputtime,
+                                state, admin)
+        VALUES (#{username}, #{realname}, #{password}, #{tel}, #{email}, #{department.id}, #{inputtime},
+                #{state}, #{admin})
+    </insert>
+    <insert id="insertRelation">
+        INSERT INTO employee_role (employee_id, role_id) VALUES (#{employeeId}, #{roleId})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Employee">
+        UPDATE `employee`
+        SET username  = #{username},
+            realname  = #{realname},
+            tel       = #{tel},
+            email     = #{email},
+            dept_id   = #{department.id},
+            inputtime = #{inputtime},
+            admin     = #{admin}
+        WHERE id = #{id}
+    </update>
+    <update id="changeState">
+        UPDATE employee
+        SET state = state ^ 1
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            username,
+            realname,
+            password,
+            tel,
+            email,
+            dept_id,
+            inputtime,
+            state,
+            admin
+        FROM `employee`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            username,
+            realname,
+            password,
+            tel,
+            email,
+            dept_id,
+            inputtime,
+            state,
+            admin
+        FROM `employee`
+    </select>
+    <select id="queryCount" resultType="int">
+        SELECT count(id)
+        FROM `employee`
+        <include refid="BaseSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+        id,
+        username,
+        realname,
+        password,
+        tel,
+        email,
+        dept_id,
+        inputtime,
+        state,
+        admin
+        FROM `employee`
+        <include refid="BaseSql"/>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT
+            id,
+            username,
+            realname,
+            password,
+            tel,
+            email,
+            dept_id,
+            inputtime,
+            state,
+            admin
+        FROM `employee`
+        WHERE username = #{username}
+    </select>
+    <sql id="BaseSql">
+        <where>
+            <if test="keywords!=null and keywords!=''">
+                AND (username LIKE concat('%',#{keywords},'%') OR tel LIKE concat('%',#{keywords},'%'))
+            </if>
+            <if test="deptId!=null">
+                AND dept_id=#{deptId}
+            </if>
+            <if test="beginDate!=null">
+                AND inputtime >= #{beginDate}
+            </if>
+            <if test="endDate!=null">
+                AND inputtime &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>
+</mapper>

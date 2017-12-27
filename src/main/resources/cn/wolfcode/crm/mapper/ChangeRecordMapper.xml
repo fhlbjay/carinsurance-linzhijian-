@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ChangeRecordMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.ChangeRecord">
+        <id column="id" property="id"/>
+        <result column="changedate" property="changeDate"/>
+        <result column="cause" property="cause"/>
+        <association column="client_id" property="client"
+                     javaType="cn.wolfcode.crm.domain.Client" columnPrefix="c_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="oldMan" column="oldman"
+                     javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="old_">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+        <association property="newMan" column="newman"
+                     javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="new_">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+        <association property="handler" column="handler_id"
+                     javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="hand_">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `changerecord`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.ChangeRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `changerecord` (changedate, handler_id, client_id, oldman, newman, cause)
+        VALUES (#{changeDate}, #{handler.id}, #{client.id}, #{oldMan.id}, #{newMan.id}, #{cause})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.ChangeRecord">
+        UPDATE `changerecord`
+        SET changedate = #{changeDate},
+            handler_id = #{handler.id},
+            client_id  = #{client.id},
+            oldman     = #{oldMan.id},
+            newman     = #{newMan.id},
+            cause      = #{cause}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            changedate,
+            handler_id,
+            client_id,
+            oldman,
+            newman,
+            cause
+        FROM `changerecord`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            changedate,
+            handler_id,
+            client_id,
+            oldman,
+            newman,
+            cause
+        FROM `changerecord`
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(cr.id)
+        FROM `changerecord` cr LEFT JOIN employee old ON cr.oldman = old.id
+            LEFT JOIN employee new ON cr.newman = new.id
+            LEFT JOIN employee hand ON cr.handler_id = hand.id
+            LEFT JOIN client c ON cr.client_id = c.id
+        <include refid="whereSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+            cr.id,
+            changedate,
+            handler_id,
+            client_id,
+            oldman,
+            newman,
+            cause,
+            c.id          c_id,
+            c.name        c_name,
+            new.id        new_id,
+            new.username  new_username,
+            old.id        old_id,
+            old.username  old_username,
+            hand.id       hand_id,
+            hand.username hand_username
+        FROM `changerecord` cr LEFT JOIN employee old ON cr.oldman = old.id
+            LEFT JOIN employee new ON cr.newman = new.id
+            LEFT JOIN employee hand ON cr.handler_id = hand.id
+            LEFT JOIN client c ON cr.client_id = c.id
+          <include refid="whereSql"/>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <sql id="whereSql">
+        <where>
+            <if test="beginDate != null">
+                and cr.changedate >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and cr.changedate &lt;= #{endDate}
+            </if>
+            <if test="handlerId != null and handlerId != ''">
+                and hand.username like concat('%',#{handlerId},'%')
+            </if>
+            <if test="oldManId != null and oldManId != ''">
+                and old.username like concat('%',#{oldManId},'%')
+            </if>
+            <if test="clientId != null and clientId != ''">
+                and c.name like concat('%',#{clientId},'%')
+            </if>
+            <if test="newManId != null and newManId != ''">
+                and new.username like concat('%',#{newManId},'%')
+            </if>
+        </where>
+    </sql>
+</mapper>

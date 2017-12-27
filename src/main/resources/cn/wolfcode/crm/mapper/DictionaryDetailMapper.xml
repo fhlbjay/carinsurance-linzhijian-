@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.DictionaryDetailMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.DictionaryDetail">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="intro" property="intro"/>
+        <result column="state" property="state"/>
+        <association property="parent" column="parent_id" javaType="cn.wolfcode.crm.domain.DictionaryDirectory"
+                     select="cn.wolfcode.crm.mapper.DictionaryDirectoryMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `dictionary_detail`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.DictionaryDetail" useGeneratedKeys="true"
+            keyProperty="id" keyColumn="id">
+        INSERT INTO `dictionary_detail` (parent_id, name, intro, state)
+        VALUES (#{parent.id}, #{name}, #{intro}, #{state})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.DictionaryDetail">
+        UPDATE `dictionary_detail`
+        SET parent_id = #{parent.id},
+            name      = #{name},
+            intro     = #{intro}
+        WHERE id = #{id}
+    </update>
+    <update id="changeState">
+        UPDATE dictionary_detail
+        SET state = state ^ 1
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            parent_id,
+            name,
+            intro,
+            state
+        FROM `dictionary_detail`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            parent_id,
+            name,
+            intro,
+            state
+        FROM `dictionary_detail`
+    </select>
+    <select id="queryCount" resultType="int">
+        SELECT count(id)
+        FROM `dictionary_detail`
+        <include refid="BaseSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+        id,
+        parent_id,
+        name,
+        intro,
+        state
+        FROM `dictionary_detail`
+        <include refid="BaseSql"/>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <select id="selectByParentSn" resultMap="BaseResultMap">
+        SELECT id, parent_id,name,intro,state  FROM `dictionary_detail` WHERE parent_id in(
+            SELECT id FROM dictionary_directory where sn = #{sn}
+        )
+    </select>
+    <sql id="BaseSql">
+        <where>
+            <if test="parentId!=null">
+                AND parent_id = #{parentId}
+            </if>
+        </where>
+    </sql>
+</mapper>

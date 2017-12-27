@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ClientRecordMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.ClientRecord">
+        <id column="id" property="id"/>
+        <result column="result" property="result"/>
+        <result column="date" property="date"/>
+        <result column="theme" property="theme"/>
+        <result column="details" property="details"/>
+        <result column="remark" property="remark"/>
+        <result column="status" property="status"/>
+        <association property="inputUser" column="inputUser_id"
+                     javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+        <association property="client" column="client_id"
+                     javaType="cn.wolfcode.crm.domain.Client" columnPrefix="c_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+        <association property="way" column="way"
+                     javaType="cn.wolfcode.crm.domain.DictionaryDetail" columnPrefix="dl_">
+            <id column="id" property="id"/>
+            <result column="name" property="name"/>
+        </association>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `clientrecord`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.ClientRecord" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `clientrecord` (result, date, inputuser_id, client_id, theme, way, details,
+                                    remark, status)
+        VALUES (#{result}, #{date}, #{inputUser.id}, #{client.id}, #{theme}, #{way.id}, #{details},
+                #{remark}, #{status})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.ClientRecord">
+        UPDATE `clientrecord`
+        SET result       = #{result},
+            date         = #{date},
+            inputuser_id = #{inputUser.id},
+            client_id    = #{client.id},
+            theme        = #{theme},
+            way          = #{way.id},
+            details      = #{details},
+            remark       = #{remark},
+            status       = #{status}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            result,
+            date,
+            inputuser_id,
+            client_id,
+            theme,
+            way,
+            details,
+            remark,
+            status
+        FROM `clientrecord`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            result,
+            date,
+            inputuser_id,
+            client_id,
+            theme,
+            way,
+            details,
+            remark,
+            status
+        FROM `clientrecord`
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(cr.id) from `clientrecord` cr LEFT JOIN client c ON cr.client_id = c.id
+        LEFT JOIN employee e ON cr.inputuser_id = e.id
+        LEFT JOIN dictionary_detail dl ON cr.way = dl.id
+        <include refid="whereSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        select cr.id, result, date, inputuser_id, client_id, theme, way, details, remark,cr.status,
+        e.id e_id,e.username e_username,
+        c.id c_id,c.name c_name,
+        dl.id dl_id,dl.name dl_name
+        from `clientrecord` cr LEFT JOIN client c ON cr.client_id = c.id
+        LEFT JOIN employee e ON cr.inputuser_id = e.id
+        LEFT JOIN dictionary_detail dl ON cr.way = dl.id
+        <include refid="whereSql"/>
+        LIMIT #{begin},#{rows}
+    </select>
+    <sql id="whereSql">
+        <where>
+            <if test="inputUser != null and inputUser !=''">
+                and e.username like concat('%',#{inputUser},'%')
+            </if>
+            <if test="client != null and client !=''">
+                and c.name like concat('%',#{client},'%')
+            </if>
+            <if test="wayId != null and wayId !=''">
+                and dl.id = #{wayId}
+            </if>
+            <if test="beginDate != null">
+                and cr.date >= #{beginDate}
+            </if>
+            <if test="endDate != null">
+                and cr.date &lt;= #{endDate}
+            </if>
+            <if test="status != null">
+                and cr.status = #{status}
+            </if>
+        </where>
+    </sql>
+</mapper>

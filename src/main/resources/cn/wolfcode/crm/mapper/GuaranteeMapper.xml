@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.GuaranteeMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Guarantee" >
+    <id column="id" property="id" />
+    <result column="sn" property="sn" />
+    <result column="productName" property="productName" />
+    <result column="dueTime" property="dueTime" />
+    <result column="remark" property="remark" />
+    <result column="status" property="status" />
+    <result column="client" property="client" />
+    <!--测试-->
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `guarantee`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Guarantee" useGeneratedKeys="true" keyProperty="id" >
+    insert into `guarantee` (sn, productName, client, dueTime, remark, status
+      )
+    values (#{sn}, #{productName}, #{client}, #{dueTime}, #{remark}, #{status}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Guarantee" >
+    update `guarantee`
+    set sn = #{sn},
+      productName = #{productName},
+      client = #{client},
+      dueTime = #{dueTime},
+      remark = #{remark},
+      status = #{status}
+
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, sn, productName, client, dueTime, remark, status
+    from `guarantee`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, sn, productName, client, dueTime, remark, status
+    from `guarantee`
+  </select>
+
+  <select id="queryCount" resultType="int">
+    select count(id)
+    from `guarantee`
+    <include refid="BaseSql"/>
+  </select>
+  <select id="queryList" resultMap="BaseResultMap">
+    select  id, sn, productName, client,dueTime, remark, status
+    from `guarantee`
+    <include refid="BaseSql"/>
+    LIMIT #{begin}, #{rows}
+  </select>
+  <update id="changeStatus">
+    UPDATE guarantee
+    SET status = status ^ 1
+    WHERE id = #{id}
+  </update>
+
+  <sql id="BaseSql">
+    <where>
+      <if test="keywords != null and keywords!=''">
+        AND (productName like concat('%',#{keywords},'%') or  client like concat('%',#{keywords},'%'))
+      </if>
+
+      <if test="dueTime!=null">
+        AND dueTime &lt;= #{dueTime}
+      </if>
+    </where>
+  </sql>
+</mapper>

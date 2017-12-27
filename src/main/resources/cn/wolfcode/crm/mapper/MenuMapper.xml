@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.MenuMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Menu">
+        <id column="id" property="id"/>
+        <result column="text" property="text"/>
+        <result column="url" property="url"/>
+        <association property="permission" column="permission_id" javaType="cn.wolfcode.crm.domain.Permission"
+                     select="cn.wolfcode.crm.mapper.PermissionMapper.selectByPrimaryKey"/>
+        <collection property="children" column="id" ofType="cn.wolfcode.crm.domain.Menu" select="selectByParentId"/>
+    </resultMap>
+    <resultMap id="BaseResultMap2" type="cn.wolfcode.crm.domain.Menu">
+        <id column="id" property="id"/>
+        <result column="text" property="text"/>
+        <result column="url" property="url"/>
+        <association property="parentMenu" column="parent_id" javaType="cn.wolfcode.crm.domain.Menu"
+                     select="selectByPrimaryKey"/>
+        <association property="permission" column="permission_id" javaType="cn.wolfcode.crm.domain.Permission"
+                     select="cn.wolfcode.crm.mapper.PermissionMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `menu`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Menu" useGeneratedKeys="true" keyProperty="id"
+            keyColumn="id">
+        INSERT INTO `menu` (text, url, parent_id, permission_id)
+        VALUES (#{text}, #{url}, #{parentMenu.id}, #{permission.id})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Menu">
+        UPDATE `menu`
+        SET text          = #{text},
+            url           = #{url},
+            parent_id     = #{parentMenu.id},
+            permission_id = #{permission.id}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap2" parameterType="java.lang.Long">
+        SELECT
+            id,
+            text,
+            url,
+            parent_id,
+            permission_id
+        FROM `menu`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            text,
+            url,
+            parent_id,
+            permission_id
+        FROM `menu`
+    </select>
+    <select id="selectByParentId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            text,
+            url,
+            parent_id,
+            permission_id
+        FROM menu
+        WHERE parent_id = #{id}
+    </select>
+    <select id="queryCount" resultType="int">
+        SELECT count(id)
+        FROM `menu`
+    </select>
+    <select id="queryList" resultMap="BaseResultMap2">
+        SELECT
+            id,
+            text,
+            url,
+            parent_id,
+            permission_id
+        FROM `menu`
+        LIMIT #{begin}, #{rows}
+    </select>
+    <select id="listNoParent" resultMap="BaseResultMap">
+        SELECT
+            id,
+            text,
+            url,
+            parent_id,
+            permission_id
+        FROM menu
+        WHERE parent_id IS NULL
+    </select>
+    <select id="selectByParentIdAndEmployeeId" resultMap="BaseResultMap">
+        SELECT m.id,text,url,parent_id,m.permission_id
+        FROM menu m LEFT JOIN role_permission rp ON m.permission_id = rp.permission_id
+        LEFT JOIN employee_role er ON rp.role_id = er.role_id
+        WHERE parent_id = #{parentId}
+        <if test="admin == false">
+            and er.employee_id = #{employeeId}
+        </if>
+    </select>
+</mapper>

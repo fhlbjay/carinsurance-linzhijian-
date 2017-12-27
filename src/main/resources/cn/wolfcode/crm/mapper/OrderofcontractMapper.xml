@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.OrderofcontractMapper" >
+  
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Orderofcontract" >
+    <id column="id" property="id" />
+    <result column="signtime" property="signtime" />
+    <result column="totalsum" property="totalsum" />
+    <result column="sum" property="sum" />
+    <result column="intro" property="intro" />
+    <result column="creatatime" property="creatatime" />
+    <result column="modifytime" property="modifytime" />
+    <result column="status" property="status" />
+    <result column="sn" property="sn" />
+    <result column="money" property="money" />
+    <result column="paytime" property="paytime" />
+    <result column="file" property="file" />
+    <result property="clientorder" column="clientorder" />
+    <association property="employeeSeller" column="employee_seller"
+    javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="ems_">
+    	<id property="id" column="id" />
+		<result property="username" column="username" />
+    </association>
+    
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `orderofcontract`
+    where id = #{id}
+  </delete>
+  
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Orderofcontract" useGeneratedKeys="true" keyProperty="id" >
+    insert into `orderofcontract` (signtime, totalsum, sum, intro, creatatime, modifytime, 
+      status, sn, money, paytime, file, clientorder, employee_seller 
+      )
+    values (now(), #{totalsum}, #{sum}, #{intro}, #{creatatime}, #{modifytime}, 
+      #{status}, #{sn}, #{money}, #{paytime}, #{file}, #{clientorder}, #{employeeSeller.id} 
+      )
+  </insert>
+  
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Orderofcontract" >
+    update `orderofcontract`
+    set signtime = #{signtime},
+      totalsum = #{totalsum},
+      sum = #{sum},
+      intro = #{intro},
+      creatatime = #{creatatime},
+      modifytime = #{modifytime},
+      status = #{status},
+      sn = #{sn},
+      money = #{money},
+      paytime = #{paytime},
+      file = #{file},
+      clientorder = #{clientorder}
+    where id = #{id}
+  </update>
+    
+    <update id="changeState">
+        UPDATE orderofcontract
+        SET status = #{status}
+        WHERE id = #{id}
+    </update>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, signtime, totalsum, sum, intro, creatatime, modifytime, status, sn, money, 
+    paytime, file, clientorder, employee_seller, employee_modifuser
+    from `orderofcontract`
+    where id = #{id}
+  </select>
+  
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, signtime, totalsum, sum, intro, creatatime, modifytime, status, sn, money, 
+    paytime, file, clientorder, employee_seller, employee_modifuser
+    from `orderofcontract`
+  </select>
+  
+  <select id="queryCount" resultType="int">
+        SELECT count(id)
+        FROM `orderofcontract`
+        <include refid="BaseSql"/>
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT  ot.id, ot.signtime, ot.totalsum, ot.sum, ot.intro, ot.creatatime, ot.modifytime, ot.status, ot.sn, ot.money, 
+				ot.paytime, ot.file,
+          		ot.clientorder, ot.employee_seller,
+				ems.id ems_id,
+				ems.username ems_username
+		FROM orderofcontract ot
+		LEFT JOIN employee ems ON ot.employee_seller = ems.id
+		<include refid="BaseSql"/>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <sql id="BaseSql">
+        <where>
+            <if test="keywords!=null and keywords!=''">
+                AND (clientorder LIKE concat('%',#{keywords},'%') <!-- OR username LIKE concat('%',#{keywords},'%') --> )
+            </if>
+            <if test="beginDate!=null">
+                AND signtime >= #{beginDate}
+            </if>
+            <if test="endDate!=null">
+                AND signtime &lt;= #{endDate}
+            </if>
+        </where>
+    </sql>    
+</mapper>
+
+
+
+
+
+

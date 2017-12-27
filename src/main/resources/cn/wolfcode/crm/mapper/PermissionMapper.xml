@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.PermissionMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Permission">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="resource" property="resource"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `permission`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Permission" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `permission` (name, resource)
+        VALUES (#{name}, #{resource})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Permission">
+        UPDATE `permission`
+        SET name     = #{name},
+            resource = #{resource}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            name,
+            resource
+        FROM `permission`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            resource
+        FROM `permission`
+    </select>
+    <select id="listByRoleId" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            resource
+        FROM `permission`
+            LEFT JOIN role_permission ON permission.id = role_permission.permission_id
+        WHERE role_permission.role_id = #{id}
+    </select>
+    <select id="queryCount" resultType="int">
+        SELECT count(id)
+        FROM `permission`
+    </select>
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            resource
+        FROM `permission`
+        LIMIT #{begin}, #{rows}
+    </select>
+    <select id="selectAllResources" resultType="java.lang.String">
+        SELECT resource
+        FROM `permission`
+    </select>
+    <select id="getPermissionResourcesByEmployeeId" resultType="java.lang.String">
+        SELECT permission.resource
+        FROM permission
+            LEFT JOIN role_permission ON permission.id = role_permission.permission_id
+            LEFT JOIN employee_role ON role_permission.role_id = employee_role.role_id
+        WHERE employee_role.employee_id = #{employeeId}
+    </select>
+    <select id="selectPermissionView" resultMap="BaseResultMap">
+        SELECT
+            id,
+            name,
+            resource
+        FROM permission
+        WHERE resource LIKE '%view%'
+    </select>
+</mapper>

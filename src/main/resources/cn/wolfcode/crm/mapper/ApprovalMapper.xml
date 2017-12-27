@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ApprovalMapper" >
+  <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Approval" >
+    <id column="id" property="id" />
+    <result column="checkNum" property="checknum" />
+    <result column="cause" property="cause" />
+    <result column="checkBeginDate" property="checkbegindate" />
+    <result column="checkEndDate" property="checkenddate" />
+    <result column="checkAppDate" property="checkappdate" />
+    <result column="checkWord" property="checkword" />
+    <result column="checkCompare" property="checkcompare" />
+    <association property="applicant" column="applicant_id"
+                 javaType="cn.wolfcode.crm.domain.Client"
+                  select="cn.wolfcode.crm.mapper.ClientMapper.selectByPrimaryKey"
+    />
+    <association property="bill" column="bill_id"
+                 javaType="cn.wolfcode.crm.domain.Bill"
+                 select="cn.wolfcode.crm.mapper.BillMapper.selectByPrimaryKey"
+    />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from `approval`
+    where id = #{id}
+  </delete>
+  <insert id="insert" parameterType="cn.wolfcode.crm.domain.Approval" useGeneratedKeys="true" keyProperty="id" >
+    insert into `approval` (checkNum, cause, checkBeginDate, checkEndDate, applicant_id, 
+      checkAppDate, checkWord, checkCompare, bill_id)
+    values (#{checknum}, #{cause}, #{checkbegindate}, #{checkenddate}, #{applicant.id}, 
+      #{checkappdate}, #{checkword}, #{checkcompare}, #{bill.id})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Approval" >
+    update `approval`
+    set checkNum = #{checknum},
+      cause = #{cause},
+      checkBeginDate = #{checkbegindate},
+      checkEndDate = #{checkenddate},
+      applicant_id = #{applicant.id},
+      checkAppDate = #{checkappdate},
+      checkWord = #{checkword},
+      checkCompare = #{checkcompare},
+      bill_id = #{bill.id}
+    where id = #{id}
+  </update>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select id, checkNum, cause, checkBeginDate, checkEndDate, applicant_id, checkAppDate, 
+    checkWord, checkCompare, bill_id
+    from `approval`
+    where id = #{id}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap" >
+    select id, checkNum, cause, checkBeginDate, checkEndDate, applicant_id, checkAppDate, 
+    checkWord, checkCompare, bill_id
+    from `approval`
+  </select>
+</mapper>

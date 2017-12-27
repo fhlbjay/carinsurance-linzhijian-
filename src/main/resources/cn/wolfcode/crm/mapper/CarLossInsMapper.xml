@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.CarLossInsMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.CarLossIns">
+        <id column="id" property="id"/>
+        <result column="ins" property="ins"/>
+        <association property="bill" column="bill_id" javaType="cn.wolfcode.crm.domain.Bill"
+                     select="cn.wolfcode.crm.mapper.BasicBillMapper.selectByPrimaryKey"/>
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `carlossins`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.CarLossIns" useGeneratedKeys="true" keyProperty="id"
+            keyColumn="id">
+        INSERT INTO `carlossins` (ins, bill_id)
+        VALUES (#{ins}, #{billId})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.CarLossIns">
+        UPDATE `carlossins`
+        SET ins = #{ins}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            ins,
+            bill_id
+        FROM `carlossins`
+        WHERE id = #{id}
+    </select>
+</mapper>

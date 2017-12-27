@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="cn.wolfcode.crm.mapper.ClaimsheetMapper">
+    <resultMap id="BaseResultMap" type="cn.wolfcode.crm.domain.Claimsheet">
+        <id column="id" property="id"/>
+        <result column="status" property="status"/>
+        <result column="informant" property="informant"/>
+        <result column="tel" property="tel"/>
+        <result column="place" property="place"/>
+        <result column="accidentTime" property="accidentTime"/>
+        <result column="sn" property="sn"/>
+        <result column="carNumber" property="carNumber"/>
+        <result column="damages" property="damages"/>
+        <association property="employee" javaType="cn.wolfcode.crm.domain.Employee" columnPrefix="e_" column="employee">
+            <id column="id" property="id"/>
+            <result column="username" property="username"/>
+        </association>
+
+    </resultMap>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+        DELETE FROM `claimsheet`
+        WHERE id = #{id}
+    </delete>
+    <insert id="insert" parameterType="cn.wolfcode.crm.domain.Claimsheet" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO `claimsheet` (status, informant, tel, place, accidentTime, sn, carNumber,
+                                  damages, employee_id)
+        VALUES (#{status}, #{informant}, #{tel}, #{place}, #{accidentTime}, #{sn}, #{carNumber},
+                #{damages}, #{employee.id})
+    </insert>
+    <update id="updateByPrimaryKey" parameterType="cn.wolfcode.crm.domain.Claimsheet">
+        UPDATE `claimsheet`
+        SET status       = #{status},
+            informant    = #{informant},
+            tel          = #{tel},
+            place        = #{place},
+            accidentTime = #{accidentTime},
+            carNumber    = #{carNumber},
+            damages      = #{damages},
+            employee_id  = #{employee.id}
+        WHERE id = #{id}
+    </update>
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long">
+        SELECT
+            id,
+            status,
+            informant,
+            tel,
+            place,
+            accidentTime,
+            sn,
+            carNumber,
+            damages,
+            employee_id
+        FROM `claimsheet`
+        WHERE id = #{id}
+    </select>
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT
+            id,
+            status,
+            informant,
+            tel,
+            place,
+            accidentTime,
+            sn,
+            carNumber,
+            damages,
+            employee_id
+        FROM `claimsheet`
+    </select>
+
+    <select id="queryCount" resultType="int">
+        SELECT count(c.id)
+        FROM `claimsheet` c left JOIN employee e on c.employee_id = e.id
+        <include refid="BaseSql"/>
+    </select>
+
+    <update id="changeStatus">
+        UPDATE claimsheet
+        SET status = 1
+        WHERE id = #{id}
+    </update>
+    <update id="changeStatus1">
+        UPDATE claimsheet
+        SET status = 2
+        WHERE id = #{id}
+    </update>
+    <!--拒保-->
+    <update id="changeStatus2">
+        UPDATE claimsheet
+        SET status = -1
+        WHERE id = #{id}
+    </update>
+
+    <select id="queryList" resultMap="BaseResultMap">
+        SELECT
+        c.id,
+        c.status,
+        c.informant,
+        c.tel,
+        c.place,
+        c.accidentTime,
+        c.sn,
+        c.carNumber,
+        c.damages,
+        e.id e_id,
+        e.username e_username
+        FROM `claimsheet` c left JOIN employee e on c.employee_id = e.id
+
+        <include refid="BaseSql"/>
+        LIMIT #{begin}, #{rows}
+    </select>
+    <sql id="BaseSql">
+        <where>
+            <if test="status!=null">
+               and c.status =#{status}
+            </if>
+           <if test="keywords!=null and keywords!=''">
+                AND (c.tel LIKE concat('%',#{keywords},'%') OR c.carNumber LIKE concat('%',#{keywords},'%'))
+            </if>
+            <if test="accidentTime!=null">
+                AND c.accidentTime &lt;= #{accidentTime}
+            </if>
+        </where>
+    </sql>
+</mapper>
